@@ -1,0 +1,32 @@
+name: Update HTTP Proxy List
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch and update proxies
+        run: |
+          curl -s "https://raw.githubusercontent.com/Vann-Dev/proxy-list/main/proxies/http.txt" > all.txt
+          curl -s "https://raw.githubusercontent.com/VPSLabCloud/VPSLab-Free-Proxy-List/refs/heads/main/http_ssl_elite.txt" >> all.txt
+          curl -s "https://github.com/andigwandi/free-proxy/raw/refs/heads/main/proxy_list.txt" >> all.txt
+          curl -s "https://github.com/Thordata/awesome-free-proxy-list/raw/refs/heads/main/proxies/http.txt" >> all.txt
+          curl -s "https://raw.githubusercontent.com/sunny9577/proxy-scraper/master/proxies.txt" >> all.txt
+          sort -u all.txt -o all.txt
+
+      - name: Commit and push updated file
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add all.txt
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update HTTP proxy list" && git push)
